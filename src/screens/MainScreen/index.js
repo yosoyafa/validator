@@ -1,25 +1,21 @@
 import {
   Animated,
   Button,
-  Image,
   Keyboard,
-  Pressable,
   SafeAreaView,
   StyleSheet,
-  Text,
   TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';
-import {BIG_NUM, ID_LENGTH} from '../../shared/static';
 import React, {useEffect, useRef, useState} from 'react';
 import {cards, colors} from '../../shared/utils';
 import {isEmpty, length, pathOr} from 'ramda';
 import {API_URL} from '@env';
 import HideKeyboardModule from '../../../NativeModules';
+import {ID_LENGTH} from '../../shared/static';
+import ScanIcon from '../../components/ScanIcon';
 import UserCard from '../../components/UserCard';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const MainScreen = () => {
   const window = useWindowDimensions();
@@ -37,6 +33,7 @@ const MainScreen = () => {
         const newUser = await getUser(userId);
         setUser(newUser || {});
         handleOpen();
+        inputRef.current.focus();
       }
     };
     validate(id);
@@ -67,6 +64,7 @@ const MainScreen = () => {
       duration: 200,
       useNativeDriver: true,
     }).start();
+    inputRef.current.focus();
   };
 
   const getUser = async userId => {
@@ -132,7 +130,7 @@ const MainScreen = () => {
         ...styles.container,
         backgroundColor: colorTable[pathOr(2, ['active'], user)],
       }}>
-      {false && helperButtons()}
+      {true && helperButtons()}
       <View pointerEvents="none">
         <TextInput
           style={styles.input}
@@ -143,6 +141,7 @@ const MainScreen = () => {
           autoFocus
         />
       </View>
+      {isEmpty(id) && <ScanIcon style={{...styles.icon}} />}
       <UserCard
         user={user}
         onPress={() => {
@@ -156,7 +155,9 @@ const MainScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1},
+  container: {
+    flex: 1,
+  },
   input: {
     height: 40,
     margin: 12,
@@ -179,6 +180,10 @@ const styles = StyleSheet.create({
     padding: 20,
     alignSelf: 'center',
     alignItems: 'center',
+  },
+  icon: {
+    position: 'absolute',
+    alignSelf: 'center',
   },
 });
 

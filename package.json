@@ -6,6 +6,8 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
+    "start:development": "NODE_ENV=development npx react-native start",
+    "start:production": "NODE_ENV=production npx react-native start",
     "test": "jest",
     "lint": "eslint --ext .jsx,.js src",
     "pre-commit": "npm run lint",
@@ -25,6 +27,7 @@
     "react-dom": "^17.0.2",
     "react-native": "^0.65.1",
     "react-native-dotenv": "^3.2.0",
+    "react-native-svg": "^12.1.1",
     "react-native-web": "^0.17.1",
     "react-scripts": "^4.0.3"
   },
