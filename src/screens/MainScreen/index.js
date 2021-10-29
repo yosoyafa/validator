@@ -9,36 +9,41 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
 import {cards, colors} from '../../shared/utils';
-import {isEmpty, length, pathOr} from 'ramda';
-import {API_URL} from '@env';
+import {isEmpty, length, propOr} from 'ramda';
 import HideKeyboardModule from '../../../NativeModules';
 import {ID_LENGTH} from '../../shared/static';
 import ScanIcon from '../../components/ScanIcon';
 import UserCard from '../../components/UserCard';
 
+import {GET_USER} from '../../state/actions/users';
+
 const MainScreen = () => {
-  const window = useWindowDimensions();
+  const dispatch = useDispatch();
+
+  const {user} = useSelector(propOr({}, 'users'));
 
   const [id, setId] = useState('');
-  const [user, setUser] = useState({});
 
   const inputRef = useRef(null);
   const boxAnimationValue = useRef(new Animated.Value(1)).current;
 
+  const window = useWindowDimensions();
+
   useEffect(() => {
-    const validate = async userId => {
-      if (length(userId) === ID_LENGTH) {
-        handleClose();
-        const newUser = await getUser(userId);
-        setUser(newUser || {});
-        handleOpen();
-        inputRef.current.focus();
-      }
-    };
-    validate(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (length(id) === ID_LENGTH) {
+      handleClose();
+      dispatch(GET_USER(id));
+    }
   }, [id]);
+
+  useEffect(() => {
+    if (!isEmpty(user)) {
+      handleOpen();
+      inputRef.current.focus();
+    }
+  }, [user]);
 
   useEffect(() => {
     Keyboard.addListener('keyboardDidShow', () => {
@@ -65,21 +70,6 @@ const MainScreen = () => {
       useNativeDriver: true,
     }).start();
     inputRef.current.focus();
-  };
-
-  const getUser = async userId => {
-    try {
-      const response = await fetch(API_URL + userId, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const json = await response.json();
-      return json.data || {};
-    } catch (error) {
-      console.error(error);
-    }
   };
 
   const colorTable = {
@@ -128,7 +118,7 @@ const MainScreen = () => {
     <SafeAreaView
       style={{
         ...styles.container,
-        backgroundColor: colorTable[pathOr(2, ['active'], user)],
+        backgroundColor: colorTable[propOr(2, 'active', user)],
       }}>
       {true && helperButtons()}
       <View pointerEvents="none">
